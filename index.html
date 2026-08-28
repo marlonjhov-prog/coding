@@ -1,12 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=./love5/">
-    <script>window.location.href = "./love5/";</script>
-    <title>Redirigiendo...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Proyectos y Scripts</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { color: #58a6ff; margin-bottom: 5px; }
+    p.sub { color: #8b949e; margin-bottom: 25px; text-align: center; }
+    .section-title { width: 100%; max-width: 700px; margin: 20px 0 10px; color: #79c0ff; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 12px 15px;
+      text-decoration: none;
+      color: #f0f6fc;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.2s;
+    }
+    .card:hover { background: #21262d; border-color: #58a6ff; color: #58a6ff; }
+    .py-card { background: #161b22; border: 1px dashed #30363d; color: #8b949e; }
+  </style>
 </head>
 <body>
-    <p>Redirigiendo al proyecto... Si no carga, <a href="./love5/">haz clic aquí</a>.</p>
+
+  <h1>Panel de Proyectos</h1>
+  <p class="sub">Repositorio coding — GitHub Pages</p>
+
+  <h3 class="section-title">📁 Proyectos Web (Carpetas)</h3>
+  <div class="grid">
+    <a class="card" href="./love5/">love5 <span>➔</span></a>
+    <a class="card" href="./love3/">love3 <span>➔</span></a>
+    <a class="card" href="./love4/">love4 <span>➔</span></a>
+    <a class="card" href="./love7/">love7 <span>➔</span></a>
+    <a class="card" href="./love10/">love10 <span>➔</span></a>
+    <a class="card" href="./love12/">love12 <span>➔</span></a>
+    <a class="card" href="./love13/">love13 <span>➔</span></a>
+    <a class="card" href="./love14/">love14 <span>➔</span></a>
+    <a class="card" href="./love15/">love15 <span>➔</span></a>
+    <a class="card" href="./love16/">love16 <span>➔</span></a>
+    <a class="card" href="./love18/">love18 <span>➔</span></a>
+    <a class="card" href="./love21/">love21 <span>➔</span></a>
+    <a class="card" href="./love23/">love23 <span>➔</span></a>
+    <a class="card" href="./love26/">love26 <span>➔</span></a>
+    <a class="card" href="./love28/">love28 <span>➔</span></a>
+    <a class="card" href="./love29/">love29 <span>➔</span></a>
+    <a class="card" href="./love30/">love30 <span>➔</span></a>
+    <a class="card" href="./love34/">love34 <span>➔</span></a>
+    <a class="card" href="./love36/">love36 <span>➔</span></a>
+    <a class="card" href="./confess2/">confess2 <span>➔</span></a>
+    <a class="card" href="./flower%202/">flower 2 <span>➔</span></a>
+    <a class="card" href="./valentine/">valentine <span>➔</span></a>
+    <a class="card" href="./valentine3/">valentine3 <span>➔</span></a>
+    <a class="card" href="./kalkulator%202/">kalkulator 2 <span>➔</span></a>
+    <a class="card" href="./koiiro%20kobo/">koiiro kobo <span>➔</span></a>
+  </div>
+
+  <h3 class="section-title">🐍 Scripts Python (.py)</h3>
+  <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px; width: 100%; max-width: 700px;">
+    * Los archivos Python no corren nativamente en el navegador. Debes ejecutarlos en tu PC o convertirlos a web mediante HTML/JS.
+  </p>
+  <div class="grid">
+    <div class="card py-card">birds of a feather.py</div>
+    <div class="card py-card">Apocalypse.py</div>
+    <div class="card py-card">right now.py</div>
+    <div class="card py-card">we can't be friends.py</div>
+    <div class="card py-card">about you.py</div>
+    <div class="card py-card">perfect onedireection.py</div>
+  </div>
+
 </body>
 </html>
