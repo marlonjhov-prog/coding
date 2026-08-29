@@ -6,7 +6,7 @@ speed(0)
 Screen().bgcolor('black')
 penup()
 setpos(0, -50) 
-pendown()
+pendown() 
 
 start_shade = 0.5
 color_variation = 0.3
