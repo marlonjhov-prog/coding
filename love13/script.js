@@ -32,7 +32,7 @@ window.addEventListener("load", () => {
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
-    // Ecuación Cardioide del corazón simétrico
+    // Ecuación Cardioide del corazón
     const inHeartBound = (x, y) => {
         let nx = x / 210;
         let ny = -y / 210 + 0.3;
@@ -127,11 +127,10 @@ window.addEventListener("load", () => {
         };
 
         this.drawCurve = () => {
-            // RETRASO PROGRESIVO SEGÚN LA PROFUNDIDAD DE LA RAMA
-            let delay = this.car.length * 45; 
+            let delay = this.car.length * 40; 
             let tt = t - delay;
             
-            if (tt <= 0) return true; // Todavía no inicia esta rama
+            if (tt <= 0) return true;
 
             let baseWidth = this.car[this.car.length - 1]?.strokeWidth || 2;
             ctx.lineWidth = Math.max(0.8, baseWidth * (1 - (this.car.length * 0.018)));
@@ -156,10 +155,11 @@ window.addEventListener("load", () => {
     var ca = [];
     var curves = [];
 
+    // Ajuste de densidad más flexible para rellenar espacios vacíos en el centro
     var cval = (x, y, rad) => {
         if (!inHeartBound(x, y)) return false;
         for (let i = 0; i < ca.length; i++) {
-            let rt = (rad + ca[i].radius) * 0.72;
+            let rt = (rad + ca[i].radius) * 0.58; 
             let xd = ca[i].x - x;
             let yd = ca[i].y - y;
             if (Math.abs(xd) > rt || Math.abs(yd) > rt) continue;
@@ -175,7 +175,7 @@ window.addEventListener("load", () => {
         let c = ca[getRandomInt(0, ca.length)];
         let a = Math.PI * 2 * Math.random();
         
-        let dist = (c.radius + rad) * (0.8 + Math.random() * 0.4);
+        let dist = (c.radius + rad) * (0.75 + Math.random() * 0.45);
         let x = c.x + dist * Math.cos(a);
         let y = c.y + dist * Math.sin(a);
         
@@ -197,9 +197,9 @@ window.addEventListener("load", () => {
             curves[i].drawCurve();
         }
 
-        // CORAZÓN CENTRAL DESTACADO (Aparece suavemente conforme avanza el árbol)
-        if (t > 150) {
-            let centerScale = Math.min(1, (t - 150) / 300);
+        // Corazón central especial
+        if (t > 120) {
+            let centerScale = Math.min(1, (t - 120) / 280);
             drawHeart(0, 10, 52 * centerScale, "#ff0044", 28);
         }
     };
@@ -213,7 +213,7 @@ window.addEventListener("load", () => {
     };
 
     var t = 0;
-    var inc = 1.2; // VELOCIDAD LENTA PAUSADA
+    var inc = 1.2;
 
     var animate = () => {
         if (!isRunning) return;
@@ -223,17 +223,22 @@ window.addEventListener("load", () => {
     };
 
     var setCircles = () => {
+        // Red de semillas estratégicas en el centro y las zonas vacías
         ca = [
             new Circle(0, 130, 0, 140, 26, 0),
-            new Circle(0, 10, 0, 10, 32, 0),
-            new Circle(-40, 40, -40, 40, 20, 0),
-            new Circle(40, 40, 40, 40, 20, 0)
+            new Circle(0, 10, 0, 10, 30, 0),
+            new Circle(-40, 40, -40, 40, 18, 0),
+            new Circle(40, 40, 40, 40, 18, 0),
+            new Circle(-60, -30, -60, -30, 16, 0),
+            new Circle(60, -30, 60, -30, 16, 0),
+            new Circle(0, -60, 0, -60, 16, 0)
         ];
         
-        for (let i = 0; i < 9000; i++) {
-            let r = Math.random() * 5 + 4;
-            if (i < 120) r = Math.random() * 8 + 14;
-            else if (i < 900) r = Math.random() * 5 + 7;
+        // Iteraciones incrementadas a 12000 para rellenar completamente la silueta
+        for (let i = 0; i < 12000; i++) {
+            let r = Math.random() * 5 + 3.5;
+            if (i < 150) r = Math.random() * 8 + 12;
+            else if (i < 1200) r = Math.random() * 5 + 6;
             grow(r);
         }
         
