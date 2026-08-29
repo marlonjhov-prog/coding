@@ -5,7 +5,6 @@ window.addEventListener("load", () => {
     const body = document.body;
     body.style.background = "#050508";
 
-    const TP = 2 * Math.PI;
     const CSIZE = 400;
 
     const ctx = (() => {
@@ -31,9 +30,14 @@ window.addEventListener("load", () => {
     };
     window.addEventListener("resize", resizeCanvas);
 
-    const getRandomInt = (min, max, low) => {
-        if (low) return Math.floor(Math.random() * Math.random() * (max - min)) + min;
-        else return Math.floor(Math.random() * (max - min)) + min;
+    const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
+
+    // Ecuación matemática para limitar el crecimiento en forma de corazón centrado
+    const inHeartBound = (x, y) => {
+        let nx = x / 210;
+        let ny = -y / 210 + 0.35;
+        let eq = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
+        return eq <= 0;
     };
 
     var Circle = function (x, y, xp, yp, radius, pc) {
@@ -51,7 +55,7 @@ window.addEventListener("load", () => {
 
     Circle.prototype.pulsate = function() {
         this.radius += this.radius * this.pulseDirection * pulseSpeed;
-        if (this.radius >= this.originalRadius * 1.4) {
+        if (this.radius >= this.originalRadius * 1.35) {
             this.pulseDirection = -1;
         } else if (this.radius <= this.originalRadius) {
             this.pulseDirection = 1;
@@ -62,14 +66,13 @@ window.addEventListener("load", () => {
         if (this.fullyGrown) {
             this.pulsate();
         }
-        // Paleta Neón: combina rojos, púrpuras y rosas brillantes
-        let heartHue = (hue + this.radius * 8) % 360;
-        drawHeart(this.x, this.y, this.radius * rf * 1.6, `hsl(${heartHue}, 100%, 60%)`);
+        let heartHue = (hue + Math.hypot(this.x, this.y) * 0.8) % 360;
+        drawHeart(this.x, this.y, this.radius * rf * 1.5, `hsl(${heartHue}, 100%, 60%)`);
     };
 
     function drawHeart(x, y, size, color) {
         ctx.shadowColor = color;
-        ctx.shadowBlur = 18; // Resplandor neón intensificado
+        ctx.shadowBlur = 12;
 
         var d = size;
         var k = x - d / 2;
@@ -88,12 +91,12 @@ window.addEventListener("load", () => {
         ctx.fillStyle = color;
         ctx.fill();
         ctx.closePath();
-        ctx.shadowBlur = 0; // Limpia sombra para no ralentizar el trazo de ramas
+        ctx.shadowBlur = 0;
     }
 
     var Curve = function () {
         this.car = [];
-        this.to = 0; // SOLUCIÓN: Inicia de inmediato sin esperar retrasos
+        this.to = 0; // Carga inmediata
         
         this.addCurveCircle = (cir) => {
             if (cir.pc) {
@@ -105,7 +108,7 @@ window.addEventListener("load", () => {
         this.setPath = () => {
             this.len = 0;
             this.path = new Path2D();
-            this.path.moveTo(0, 0);
+            this.path.moveTo(0, 50); // Inicio desde la base del tronco
             if (this.car.length > 1) {
                 this.path.lineTo(this.car[1].xp, this.car[1].yp);
             }
@@ -122,18 +125,16 @@ window.addEventListener("load", () => {
 
         this.drawCurve = () => {
             let tt = this.to + t;
-            
-            // Grosor orgánico: Las ramas principales son más gruesas
-            ctx.lineWidth = Math.max(1.5, 6 - (this.car.length * 0.4));
+            ctx.lineWidth = Math.max(1.5, 5 - (this.car.length * 0.3));
             ctx.setLineDash([Math.max(1, tt), 4000]);
             ctx.stroke(this.path);
 
-            if (tt > this.len + 30) {
+            if (tt > this.len + 20) {
                 this.car[this.car.length - 1].fullyGrown = true;
                 this.car[this.car.length - 1].drawCircle(0.85);
                 return true;
             } else if (tt > this.len) {
-                let raf = 0.85 * (tt - this.len) / 30;
+                let raf = 0.85 * (tt - this.len) / 20;
                 this.car[this.car.length - 1].drawCircle(raf);
                 return true;
             } else {
@@ -144,16 +145,15 @@ window.addEventListener("load", () => {
 
     var ca = [];
     var curves = [];
-    var eg = Math.random() < 0.3;
 
     var cval = (x, y, rad) => {
-        if (Math.pow(x * x + y * y, 0.5) > CSIZE - rad) return false;
+        if (!inHeartBound(x, y)) return false;
         for (let i = 0; i < ca.length; i++) {
             let rt = rad + ca[i].radius;
             let xd = ca[i].x - x;
             let yd = ca[i].y - y;
             if (Math.abs(xd) > rt || Math.abs(yd) > rt) continue;
-            if (Math.pow(xd * xd + yd * yd, 0.5) + 1 < rt) {
+            if (Math.hypot(xd, yd) + 1 < rt) {
                 return false;
             }
         }
@@ -162,10 +162,8 @@ window.addEventListener("load", () => {
 
     var grow = (rad) => {
         if (ca.length === 0) return false;
-        let c = eg
-            ? ca[ca.length - 1 - getRandomInt(0, ca.length, true)]
-            : ca[getRandomInt(0, ca.length)];
-        let a = TP * Math.random();
+        let c = ca[getRandomInt(0, ca.length)];
+        let a = Math.PI * 2 * Math.random();
         let x = c.x + (c.radius + rad) * Math.cos(a);
         let y = c.y + (c.radius + rad) * Math.sin(a);
         if (cval(x, y, rad)) {
@@ -195,7 +193,7 @@ window.addEventListener("load", () => {
     };
 
     var t = 0;
-    var inc = 5; // Mayor velocidad de crecimiento inicial
+    var inc = 6;
 
     var animate = () => {
         if (!isRunning) return;
@@ -207,14 +205,15 @@ window.addEventListener("load", () => {
     var hue = getRandomInt(0, 360);
 
     var setCircles = () => {
-        eg = Math.random() < 0.3;
-        ca = [new Circle(0, 0, 0, 0, 45, 0, 0)];
+        // Tronco inicial en la base del corazón
+        ca = [new Circle(0, 120, 0, 140, 35, 0)];
         
-        for (let i = 0; i < 700; i++) {
-            let r = 12;
-            if (i < 20) r = 36;
-            else if (i < 80) r = 26;
-            else if (i < 250) r = 18;
+        // Densidad alta de ramas para llenar la silueta completamente
+        for (let i = 0; i < 1600; i++) {
+            let r = 8;
+            if (i < 30) r = 24;
+            else if (i < 150) r = 16;
+            else if (i < 500) r = 11;
             grow(r);
         }
         
@@ -232,7 +231,6 @@ window.addEventListener("load", () => {
 
     resizeCanvas();
     setCircles();
-    // Estilo verde esmeralda luminoso para las ramas
-    ctx.strokeStyle = "#80e644";
+    ctx.strokeStyle = "hsla(90, 80%, 50%, 0.75)";
     startAnimation();
 });
