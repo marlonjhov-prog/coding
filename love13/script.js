@@ -8,7 +8,6 @@ window.addEventListener("load", () => {
     const TP = 2 * Math.PI;
     const CSIZE = 400;
 
-    // Crear contenedor y Canvas dinámicamente
     const ctx = (() => {
         let d = document.createElement("div");
         d.style.textAlign = "center";
@@ -105,14 +104,18 @@ window.addEventListener("load", () => {
             this.len = 0;
             this.path = new Path2D();
             this.path.moveTo(0, 0);
-            this.path.lineTo(this.car[1].xp, this.car[1].yp);
+            if (this.car.length > 1) {
+                this.path.lineTo(this.car[1].xp, this.car[1].yp);
+            }
             this.len += this.car[0].radius;
             for (let i = 1; i < this.car.length - 1; i++) {
                 this.path.bezierCurveTo(this.car[i].x, this.car[i].y, this.car[i].x, this.car[i].y, this.car[i + 1].xp, this.car[i + 1].yp);
                 this.len += 2 * this.car[i].radius;
             }
-            this.path.lineTo(this.car[this.car.length - 1].x, this.car[this.car.length - 1].y);
-            this.len += this.car[this.car.length - 1].radius;
+            if (this.car.length > 0) {
+                this.path.lineTo(this.car[this.car.length - 1].x, this.car[this.car.length - 1].y);
+                this.len += this.car[this.car.length - 1].radius;
+            }
         };
         this.drawCurve = () => {
             let tt = this.to + t;
@@ -152,6 +155,7 @@ window.addEventListener("load", () => {
     };
 
     var grow = (rad) => {
+        if (ca.length === 0) return false;
         let c = eg
             ? ca[ca.length - 1 - getRandomInt(0, ca.length, true)]
             : ca[getRandomInt(0, ca.length)];
@@ -178,13 +182,12 @@ window.addEventListener("load", () => {
         for (let i = 0; i < curves.length; i++) {
             if (curves[i].drawCurve()) grown++;
         }
-        if (grown === curves.length) {
+        if (grown === curves.length && curves.length > 0) {
             fullyGrownFlag = true;
         }
         return grown;
     };
 
-    // Control de animación corregido
     var isRunning = false;
     var startAnimation = () => {
         if (!isRunning) {
@@ -211,51 +214,43 @@ window.addEventListener("load", () => {
         t += inc;
 
         let grown = draw();
-        if (!grown && !fullyGrownFlag) {
+        
+        // Evitar corte abrupto: si no hay ramas vivas se reinicia o continúa el pulso
+        if (grown === 0 && !fullyGrownFlag) {
             ctx.strokeStyle = "hsla(" + getRandomInt(0, 360) + ",90%,60%,0.6)";
             setCircles();
         }
-        if (fullyGrownFlag && grown === 0 && t <= -2000) { 
-            resetPattern();
-        }
+        
         requestAnimationFrame(animate);
     };
 
-    function resetPattern() {
-        eg = Math.random() < 0.3;
-        hue = getRandomInt(0, 360);
-        fullyGrownFlag = false;
-        t = 0;
-        setCircles();
-    }
-
     ctx.canvas.onmouseover = () => {
-        inc = -8;
+        inc = -4; // Reducido para evitar saltos en reversa
     };
 
     ctx.canvas.onmouseout = () => {
-        if (t <= -2000) {
-            resetPattern();
-        }
         inc = 3;
     };
 
     var hue = getRandomInt(0, 360);
 
+    // Optimización del bucle de generación para evitar colapsar la GPU/CPU
     var setCircles = () => {
         eg = Math.random() < 0.3;
         ca = [new Circle(0, 0, 0, 0, 50, 0, 0)];
-        for (let i = 0; i < 2000; i++) {
+        
+        // Reducción a 600 iteraciones óptimas para rendimiento fluido constante
+        for (let i = 0; i < 600; i++) {
             let r = 10;
-            if (i < 20) r = 42;
-            else if (i < 100) r = 34;
-            else if (i < 300) r = 26;
-            else if (i < 1000) r = 18;
+            if (i < 15) r = 38;
+            else if (i < 60) r = 28;
+            else if (i < 200) r = 20;
             grow(r);
         }
+        
         curves = [];
         for (let i = 0; i < ca.length; i++) {
-            if (ca[i].c.length == 0) {
+            if (ca[i].c.length === 0) {
                 var nc = new Curve();
                 nc.car = [ca[i]];
                 nc.addCurveCircle(ca[i]);
@@ -265,7 +260,7 @@ window.addEventListener("load", () => {
         }
     };
 
-    // Inicialización automática asegurada
+    // Arranque limpio
     resizeCanvas();
     setCircles();
     ctx.strokeStyle = "hsla(" + getRandomInt(0, 360) + ",90%,60%,0.6)";
