@@ -1,6 +1,6 @@
 import turtle
 
-t = turtle.Turtle()
+t = turtle.Turtle() 
 t.speed(2) 
 t.pensize(2)
 
