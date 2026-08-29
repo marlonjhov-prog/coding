@@ -1,9 +1,9 @@
 "use strict";
 
 window.addEventListener("load", () => {
-    var pulseSpeed = 0.02;
-    const body = document.getElementsByTagName("body").item(0);
-    body.style.background = "#000";
+    const pulseSpeed = 0.025;
+    const body = document.body;
+    body.style.background = "#050508";
 
     const TP = 2 * Math.PI;
     const CSIZE = 400;
@@ -51,7 +51,7 @@ window.addEventListener("load", () => {
 
     Circle.prototype.pulsate = function() {
         this.radius += this.radius * this.pulseDirection * pulseSpeed;
-        if (this.radius >= this.originalRadius * 1.5) {
+        if (this.radius >= this.originalRadius * 1.4) {
             this.pulseDirection = -1;
         } else if (this.radius <= this.originalRadius) {
             this.pulseDirection = 1;
@@ -62,14 +62,14 @@ window.addEventListener("load", () => {
         if (this.fullyGrown) {
             this.pulsate();
         }
-        drawHeart(this.x, this.y, this.radius * rf * 1.5, "hsl(" + (hue + 5 * this.radius) + ",90%,50%)");
+        // Paleta Neón: combina rojos, púrpuras y rosas brillantes
+        let heartHue = (hue + this.radius * 8) % 360;
+        drawHeart(this.x, this.y, this.radius * rf * 1.6, `hsl(${heartHue}, 100%, 60%)`);
     };
 
     function drawHeart(x, y, size, color) {
         ctx.shadowColor = color;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+        ctx.shadowBlur = 18; // Resplandor neón intensificado
 
         var d = size;
         var k = x - d / 2;
@@ -88,18 +88,20 @@ window.addEventListener("load", () => {
         ctx.fillStyle = color;
         ctx.fill();
         ctx.closePath();
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; // Limpia sombra para no ralentizar el trazo de ramas
     }
 
     var Curve = function () {
         this.car = [];
-        this.to = -getRandomInt(0, 400);
+        this.to = 0; // SOLUCIÓN: Inicia de inmediato sin esperar retrasos
+        
         this.addCurveCircle = (cir) => {
             if (cir.pc) {
                 this.car.unshift(cir.pc);
                 this.addCurveCircle(cir.pc);
             }
         };
+
         this.setPath = () => {
             this.len = 0;
             this.path = new Path2D();
@@ -117,16 +119,21 @@ window.addEventListener("load", () => {
                 this.len += this.car[this.car.length - 1].radius;
             }
         };
+
         this.drawCurve = () => {
             let tt = this.to + t;
+            
+            // Grosor orgánico: Las ramas principales son más gruesas
+            ctx.lineWidth = Math.max(1.5, 6 - (this.car.length * 0.4));
             ctx.setLineDash([Math.max(1, tt), 4000]);
             ctx.stroke(this.path);
-            if (tt > this.len + 40) {
+
+            if (tt > this.len + 30) {
                 this.car[this.car.length - 1].fullyGrown = true;
-                this.car[this.car.length - 1].drawCircle(0.8);
-                return tt <= this.len + 120;
+                this.car[this.car.length - 1].drawCircle(0.85);
+                return true;
             } else if (tt > this.len) {
-                let raf = 0.8 * (tt - this.len) / 40;
+                let raf = 0.85 * (tt - this.len) / 30;
                 this.car[this.car.length - 1].drawCircle(raf);
                 return true;
             } else {
@@ -145,8 +152,7 @@ window.addEventListener("load", () => {
             let rt = rad + ca[i].radius;
             let xd = ca[i].x - x;
             let yd = ca[i].y - y;
-            if (Math.abs(xd) > rt) continue;
-            if (Math.abs(yd) > rt) continue;
+            if (Math.abs(xd) > rt || Math.abs(yd) > rt) continue;
             if (Math.pow(xd * xd + yd * yd, 0.5) + 1 < rt) {
                 return false;
             }
@@ -173,19 +179,11 @@ window.addEventListener("load", () => {
         return false;
     };
 
-    ctx.fillStyle = "green";
-    ctx.lineWidth = 5;
-
     var draw = () => {
         ctx.clearRect(-CSIZE, -CSIZE, 2 * CSIZE, 2 * CSIZE);
-        let grown = 0;
         for (let i = 0; i < curves.length; i++) {
-            if (curves[i].drawCurve()) grown++;
+            curves[i].drawCurve();
         }
-        if (grown === curves.length && curves.length > 0) {
-            fullyGrownFlag = true;
-        }
-        return grown;
     };
 
     var isRunning = false;
@@ -196,55 +194,27 @@ window.addEventListener("load", () => {
         }
     };
 
-    var toggleAnimation = () => {
-        isRunning = !isRunning;
-        if (isRunning) {
-            requestAnimationFrame(animate);
-        }
-    };
-
-    body.addEventListener("click", toggleAnimation, false);
-
     var t = 0;
-    var inc = 3;
-    var fullyGrownFlag = false;
+    var inc = 5; // Mayor velocidad de crecimiento inicial
 
     var animate = () => {
         if (!isRunning) return;
         t += inc;
-
-        let grown = draw();
-        
-        // Evitar corte abrupto: si no hay ramas vivas se reinicia o continúa el pulso
-        if (grown === 0 && !fullyGrownFlag) {
-            ctx.strokeStyle = "hsla(" + getRandomInt(0, 360) + ",90%,60%,0.6)";
-            setCircles();
-        }
-        
+        draw();
         requestAnimationFrame(animate);
-    };
-
-    ctx.canvas.onmouseover = () => {
-        inc = -4; // Reducido para evitar saltos en reversa
-    };
-
-    ctx.canvas.onmouseout = () => {
-        inc = 3;
     };
 
     var hue = getRandomInt(0, 360);
 
-    // Optimización del bucle de generación para evitar colapsar la GPU/CPU
     var setCircles = () => {
         eg = Math.random() < 0.3;
-        ca = [new Circle(0, 0, 0, 0, 50, 0, 0)];
+        ca = [new Circle(0, 0, 0, 0, 45, 0, 0)];
         
-        // Reducción a 600 iteraciones óptimas para rendimiento fluido constante
-        for (let i = 0; i < 600; i++) {
-            let r = 10;
-            if (i < 15) r = 38;
-            else if (i < 60) r = 28;
-            else if (i < 200) r = 20;
+        for (let i = 0; i < 700; i++) {
+            let r = 12;
+            if (i < 20) r = 36;
+            else if (i < 80) r = 26;
+            else if (i < 250) r = 18;
             grow(r);
         }
         
@@ -260,9 +230,9 @@ window.addEventListener("load", () => {
         }
     };
 
-    // Arranque limpio
     resizeCanvas();
     setCircles();
-    ctx.strokeStyle = "hsla(" + getRandomInt(0, 360) + ",90%,60%,0.6)";
+    // Estilo verde esmeralda luminoso para las ramas
+    ctx.strokeStyle = "#80e644";
     startAnimation();
 });
