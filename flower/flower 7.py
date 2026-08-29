@@ -1,6 +1,6 @@
 import turtle
 
-t = turtle.Turtle()
+t = turtle.Turtle() 
 s = turtle.Screen()
 
 s.bgcolor('#262626')
