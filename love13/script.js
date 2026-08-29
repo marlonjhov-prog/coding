@@ -1,7 +1,7 @@
 "use strict";
 
 window.addEventListener("load", () => {
-    const pulseSpeed = 0.02;
+    const pulseSpeed = 0.018;
     const body = document.body;
     body.style.background = "#050508";
 
@@ -32,7 +32,7 @@ window.addEventListener("load", () => {
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
-    // Ecuación Cardioide perfeccionada para definir el borde simétrico exacto
+    // Ecuación Cardioide del corazón simétrico
     const inHeartBound = (x, y) => {
         let nx = x / 210;
         let ny = -y / 210 + 0.3;
@@ -98,7 +98,6 @@ window.addEventListener("load", () => {
 
     var Curve = function () {
         this.car = [];
-        this.to = 0;
         
         this.addCurveCircle = (cir) => {
             if (cir.pc) {
@@ -128,19 +127,24 @@ window.addEventListener("load", () => {
         };
 
         this.drawCurve = () => {
-            let tt = this.to + t;
+            // RETRASO PROGRESIVO SEGÚN LA PROFUNDIDAD DE LA RAMA
+            let delay = this.car.length * 45; 
+            let tt = t - delay;
+            
+            if (tt <= 0) return true; // Todavía no inicia esta rama
+
             let baseWidth = this.car[this.car.length - 1]?.strokeWidth || 2;
             ctx.lineWidth = Math.max(0.8, baseWidth * (1 - (this.car.length * 0.018)));
             
             ctx.setLineDash([Math.max(1, tt), 4000]);
             ctx.stroke(this.path);
 
-            if (tt > this.len + 15) {
+            if (tt > this.len + 20) {
                 this.car[this.car.length - 1].fullyGrown = true;
                 this.car[this.car.length - 1].drawCircle(0.8);
                 return true;
             } else if (tt > this.len) {
-                let raf = 0.8 * (tt - this.len) / 15;
+                let raf = 0.8 * (tt - this.len) / 20;
                 this.car[this.car.length - 1].drawCircle(raf);
                 return true;
             } else {
@@ -189,14 +193,15 @@ window.addEventListener("load", () => {
     var draw = () => {
         ctx.clearRect(-CSIZE, -CSIZE, 2 * CSIZE, 2 * CSIZE);
         
-        // Renderizado de ramas
         for (let i = 0; i < curves.length; i++) {
             curves[i].drawCurve();
         }
 
-        // DIBUJAR EL CORAZÓN CENTRAL ESPECIAL Y DESTACADO
-        let centerScale = Math.min(1, Math.max(0.1, t / 400));
-        drawHeart(0, 10, 48 * centerScale, "#ff0044", 25);
+        // CORAZÓN CENTRAL DESTACADO (Aparece suavemente conforme avanza el árbol)
+        if (t > 150) {
+            let centerScale = Math.min(1, (t - 150) / 300);
+            drawHeart(0, 10, 52 * centerScale, "#ff0044", 28);
+        }
     };
 
     var isRunning = false;
@@ -208,7 +213,7 @@ window.addEventListener("load", () => {
     };
 
     var t = 0;
-    var inc = 1.5; // VELOCIDAD LENTA Y FLUIDA (Paso a paso)
+    var inc = 1.2; // VELOCIDAD LENTA PAUSADA
 
     var animate = () => {
         if (!isRunning) return;
@@ -218,7 +223,6 @@ window.addEventListener("load", () => {
     };
 
     var setCircles = () => {
-        // Semilla principal desde el tronco inferior y el centro
         ca = [
             new Circle(0, 130, 0, 140, 26, 0),
             new Circle(0, 10, 0, 10, 32, 0),
