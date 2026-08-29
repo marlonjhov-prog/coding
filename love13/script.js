@@ -32,10 +32,10 @@ window.addEventListener("load", () => {
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
-    // Ecuación matemática para limitar el crecimiento en forma de corazón centrado
+    // Ecuación matemática exacta para forzar forma de corazón centrado
     const inHeartBound = (x, y) => {
-        let nx = x / 210;
-        let ny = -y / 210 + 0.35;
+        let nx = x / 230;
+        let ny = -y / 230 + 0.25;
         let eq = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
         return eq <= 0;
     };
@@ -66,13 +66,15 @@ window.addEventListener("load", () => {
         if (this.fullyGrown) {
             this.pulsate();
         }
-        let heartHue = (hue + Math.hypot(this.x, this.y) * 0.8) % 360;
-        drawHeart(this.x, this.y, this.radius * rf * 1.5, `hsl(${heartHue}, 100%, 60%)`);
+        // Variación de tonos rojos neón, carmesí y rosas intensos
+        let redHue = (345 + (Math.hypot(this.x, this.y) * 0.15)) % 360;
+        let lightness = 50 + (this.radius % 15);
+        drawHeart(this.x, this.y, this.radius * rf * 1.5, `hsl(${redHue}, 100%, ${lightness}%)`);
     };
 
     function drawHeart(x, y, size, color) {
         ctx.shadowColor = color;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
 
         var d = size;
         var k = x - d / 2;
@@ -96,7 +98,7 @@ window.addEventListener("load", () => {
 
     var Curve = function () {
         this.car = [];
-        this.to = 0; // Carga inmediata
+        this.to = 0;
         
         this.addCurveCircle = (cir) => {
             if (cir.pc) {
@@ -108,7 +110,7 @@ window.addEventListener("load", () => {
         this.setPath = () => {
             this.len = 0;
             this.path = new Path2D();
-            this.path.moveTo(0, 50); // Inicio desde la base del tronco
+            this.path.moveTo(0, 80);
             if (this.car.length > 1) {
                 this.path.lineTo(this.car[1].xp, this.car[1].yp);
             }
@@ -125,7 +127,7 @@ window.addEventListener("load", () => {
 
         this.drawCurve = () => {
             let tt = this.to + t;
-            ctx.lineWidth = Math.max(1.5, 5 - (this.car.length * 0.3));
+            ctx.lineWidth = Math.max(1.2, 4.5 - (this.car.length * 0.25));
             ctx.setLineDash([Math.max(1, tt), 4000]);
             ctx.stroke(this.path);
 
@@ -153,7 +155,7 @@ window.addEventListener("load", () => {
             let xd = ca[i].x - x;
             let yd = ca[i].y - y;
             if (Math.abs(xd) > rt || Math.abs(yd) > rt) continue;
-            if (Math.hypot(xd, yd) + 1 < rt) {
+            if (Math.hypot(xd, yd) + 0.5 < rt) {
                 return false;
             }
         }
@@ -193,7 +195,7 @@ window.addEventListener("load", () => {
     };
 
     var t = 0;
-    var inc = 6;
+    var inc = 8; // Velocidad de crecimiento aumentada
 
     var animate = () => {
         if (!isRunning) return;
@@ -202,18 +204,16 @@ window.addEventListener("load", () => {
         requestAnimationFrame(animate);
     };
 
-    var hue = getRandomInt(0, 360);
-
     var setCircles = () => {
-        // Tronco inicial en la base del corazón
-        ca = [new Circle(0, 120, 0, 140, 35, 0)];
+        // Tronco inicial desde la base
+        ca = [new Circle(0, 100, 0, 120, 30, 0)];
         
-        // Densidad alta de ramas para llenar la silueta completamente
-        for (let i = 0; i < 1600; i++) {
-            let r = 8;
-            if (i < 30) r = 24;
-            else if (i < 150) r = 16;
-            else if (i < 500) r = 11;
+        // Generar alta cantidad de ramas (4500 iteraciones)
+        for (let i = 0; i < 4500; i++) {
+            let r = 6;
+            if (i < 50) r = 22;
+            else if (i < 300) r = 14;
+            else if (i < 1200) r = 9;
             grow(r);
         }
         
@@ -231,6 +231,7 @@ window.addEventListener("load", () => {
 
     resizeCanvas();
     setCircles();
-    ctx.strokeStyle = "hsla(90, 80%, 50%, 0.75)";
+    // Estilo de ramas verde lima neón brillante
+    ctx.strokeStyle = "hsla(100, 85%, 55%, 0.85)";
     startAnimation();
 });
