@@ -9,7 +9,7 @@ tr.speed(0)
 tr.tracer(100)
 tr.pensize(1)
 
-warna_bunga = ('#FF78C4', '#97DBAE', '#C1EFFF', '#F0B86E')
+warna_bunga = ('#FF78C4', '#97DBAE', '#C1EFFF', '#F0B86E') 
 
 for i in range(3):
     for n in range(400):
