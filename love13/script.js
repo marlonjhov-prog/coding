@@ -1,7 +1,7 @@
 "use strict";
 
 window.addEventListener("load", () => {
-    const pulseSpeed = 0.025;
+    const pulseSpeed = 0.02;
     const body = document.body;
     body.style.background = "#050508";
 
@@ -32,10 +32,10 @@ window.addEventListener("load", () => {
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
-    // Ecuación matemática del corazón
+    // Ecuación Cardioide perfeccionada para definir el borde simétrico exacto
     const inHeartBound = (x, y) => {
-        let nx = x / 220;
-        let ny = -y / 220 + 0.25;
+        let nx = x / 210;
+        let ny = -y / 210 + 0.3;
         let eq = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
         return eq <= 0;
     };
@@ -51,13 +51,12 @@ window.addEventListener("load", () => {
         this.c = [];
         this.fullyGrown = false;
         this.pulseDirection = 1;
-        // Asignación de grosor aleatorio dinámico
-        this.strokeWidth = Math.max(0.8, (Math.random() * 2.5 + 1.5) * (radius / 20));
+        this.strokeWidth = Math.max(0.8, (Math.random() * 2.2 + 1.2) * (radius / 20));
     };
 
     Circle.prototype.pulsate = function() {
         this.radius += this.radius * this.pulseDirection * pulseSpeed;
-        if (this.radius >= this.originalRadius * 1.35) {
+        if (this.radius >= this.originalRadius * 1.3) {
             this.pulseDirection = -1;
         } else if (this.radius <= this.originalRadius) {
             this.pulseDirection = 1;
@@ -68,15 +67,14 @@ window.addEventListener("load", () => {
         if (this.fullyGrown) {
             this.pulsate();
         }
-        // Paleta de rojos neón, carmesí y coral
-        let redHue = (340 + Math.random() * 25) % 360;
-        let lightness = 50 + (this.radius % 15);
-        drawHeart(this.x, this.y, this.radius * rf * 1.4, `hsl(${redHue}, 100%, ${lightness}%)`);
+        let redHue = (345 + Math.random() * 20) % 360;
+        let lightness = 52 + (this.radius % 12);
+        drawHeart(this.x, this.y, this.radius * rf * 1.4, `hsl(${redHue}, 100%, ${lightness}%)`, 10);
     };
 
-    function drawHeart(x, y, size, color) {
+    function drawHeart(x, y, size, color, glow = 10) {
         ctx.shadowColor = color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = glow;
 
         var d = size;
         var k = x - d / 2;
@@ -131,10 +129,8 @@ window.addEventListener("load", () => {
 
         this.drawCurve = () => {
             let tt = this.to + t;
-            
-            // Variación aleatoria de grosor por rama (más gruesas abajo, más finas arriba)
             let baseWidth = this.car[this.car.length - 1]?.strokeWidth || 2;
-            ctx.lineWidth = Math.max(0.8, baseWidth * (1 - (this.car.length * 0.02)));
+            ctx.lineWidth = Math.max(0.8, baseWidth * (1 - (this.car.length * 0.018)));
             
             ctx.setLineDash([Math.max(1, tt), 4000]);
             ctx.stroke(this.path);
@@ -156,11 +152,10 @@ window.addEventListener("load", () => {
     var ca = [];
     var curves = [];
 
-    // Verificación de distancia flexible para permitir ramas tupidas sin cruzarse
     var cval = (x, y, rad) => {
         if (!inHeartBound(x, y)) return false;
         for (let i = 0; i < ca.length; i++) {
-            let rt = (rad + ca[i].radius) * 0.75; // Permite ramas más cercanas
+            let rt = (rad + ca[i].radius) * 0.72;
             let xd = ca[i].x - x;
             let yd = ca[i].y - y;
             if (Math.abs(xd) > rt || Math.abs(yd) > rt) continue;
@@ -176,8 +171,7 @@ window.addEventListener("load", () => {
         let c = ca[getRandomInt(0, ca.length)];
         let a = Math.PI * 2 * Math.random();
         
-        // Medidas y ángulos aleatorios para diversificar las ramas
-        let dist = (c.radius + rad) * (0.8 + Math.random() * 0.5);
+        let dist = (c.radius + rad) * (0.8 + Math.random() * 0.4);
         let x = c.x + dist * Math.cos(a);
         let y = c.y + dist * Math.sin(a);
         
@@ -194,9 +188,15 @@ window.addEventListener("load", () => {
 
     var draw = () => {
         ctx.clearRect(-CSIZE, -CSIZE, 2 * CSIZE, 2 * CSIZE);
+        
+        // Renderizado de ramas
         for (let i = 0; i < curves.length; i++) {
             curves[i].drawCurve();
         }
+
+        // DIBUJAR EL CORAZÓN CENTRAL ESPECIAL Y DESTACADO
+        let centerScale = Math.min(1, Math.max(0.1, t / 400));
+        drawHeart(0, 10, 48 * centerScale, "#ff0044", 25);
     };
 
     var isRunning = false;
@@ -208,7 +208,7 @@ window.addEventListener("load", () => {
     };
 
     var t = 0;
-    var inc = 10;
+    var inc = 1.5; // VELOCIDAD LENTA Y FLUIDA (Paso a paso)
 
     var animate = () => {
         if (!isRunning) return;
@@ -218,19 +218,18 @@ window.addEventListener("load", () => {
     };
 
     var setCircles = () => {
-        // Tronco central + semillas distribuidas para tupir toda la forma
+        // Semilla principal desde el tronco inferior y el centro
         ca = [
-            new Circle(0, 100, 0, 120, 28, 0),
-            new Circle(-30, 20, -30, 30, 20, 0),
-            new Circle(30, 20, 30, 30, 20, 0),
-            new Circle(0, -40, 0, -30, 18, 0)
+            new Circle(0, 130, 0, 140, 26, 0),
+            new Circle(0, 10, 0, 10, 32, 0),
+            new Circle(-40, 40, -40, 40, 20, 0),
+            new Circle(40, 40, 40, 40, 20, 0)
         ];
         
-        // Multiplicación masiva a 8000 intentos con medidas variadas
-        for (let i = 0; i < 8000; i++) {
-            let r = Math.random() * 6 + 4; // Radios aleatorios entre 4 y 10
-            if (i < 100) r = Math.random() * 10 + 15;
-            else if (i < 800) r = Math.random() * 6 + 8;
+        for (let i = 0; i < 9000; i++) {
+            let r = Math.random() * 5 + 4;
+            if (i < 120) r = Math.random() * 8 + 14;
+            else if (i < 900) r = Math.random() * 5 + 7;
             grow(r);
         }
         
@@ -248,6 +247,6 @@ window.addEventListener("load", () => {
 
     resizeCanvas();
     setCircles();
-    ctx.strokeStyle = "hsla(95, 80%, 50%, 0.8)";
+    ctx.strokeStyle = "hsla(98, 85%, 52%, 0.85)";
     startAnimation();
 });
