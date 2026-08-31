@@ -24,6 +24,7 @@
             text-align: left;
             line-height: 1.8;
             font-size: 1.2rem;
+            margin-top: 20px;
         }
         .line {
             min-height: 1.8em;
@@ -42,10 +43,25 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+        button {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background-color: #2ea043;
+        }
     </style>
 </head>
 <body>
 
+    <button id="play-btn">▶ Reproducir Canción</button>
+    <audio id="audio-player" src="18.mp3"></audio>
     <div id="lyrics-container"></div>
 
     <script src="script.js"></script>
