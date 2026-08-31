@@ -10,6 +10,8 @@ const lyricsData = [
 ];
 
 const container = document.getElementById("lyrics-container");
+const playBtn = document.getElementById("play-btn");
+const audio = document.getElementById("audio-player");
 
 function animateText(text, speed, element) {
     let index = 0;
@@ -31,6 +33,10 @@ function animateText(text, speed, element) {
 }
 
 function startKaraoke() {
+    container.innerHTML = "";
+    audio.play();
+    playBtn.style.display = "none";
+
     lyricsData.forEach((item) => {
         setTimeout(() => {
             const lineElement = document.createElement("div");
@@ -41,4 +47,4 @@ function startKaraoke() {
     });
 }
 
-window.addEventListener("load", startKaraoke);
+playBtn.addEventListener("click", startKaraoke);
